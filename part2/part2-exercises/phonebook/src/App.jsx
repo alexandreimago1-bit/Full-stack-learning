@@ -96,7 +96,7 @@ const App = () => {
                   console.log('promise fulfilled', newPerson)
               })
               .catch(error => {
-                setMessage(`${newName} doesn't Exist`)
+                setMessage(`${newName} doesn't Exist`,error)
               })
           }
         }else{
