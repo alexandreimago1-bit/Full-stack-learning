@@ -11,6 +11,7 @@ const cors = require('cors')
 app.use(cors())
 
 app.use(morgan(':method :url :res[content-length] - :response-time ms :body'))
+app.use(express.static('dist'))
 let persons = [
     { 
       "id": "1",
@@ -34,9 +35,7 @@ let persons = [
     }
 ]
 
-app.get('/',(request, response) => {
-    response.send('<h1>THIS IS MY APP!</h1>')
-})
+
 
 app.get('/info',(request,response) => {
     const now = new Date()
@@ -56,7 +55,7 @@ app.get('/info',(request,response) => {
             <p><time datetime="${now.toISOString()}">${formattedTime}</time>.</p>
 
         </div>`)
-    console.log(Success)
+    
 })
 
 app.get('/api/persons',(request, response) => {
@@ -116,7 +115,7 @@ app.post('/api/persons', (request, response) => {
     response.json(person)
 })
 
-const PORT = 4000
+const PORT = process.env.PORT || 4000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
