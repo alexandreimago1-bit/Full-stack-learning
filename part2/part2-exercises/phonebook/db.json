@@ -1,0 +1,15 @@
+{
+  "persons": [
+    {
+      "name": "Andrea Alhian S Berber",
+      "number": "09998673968",
+      "id": "VBf7S-Nhl58"
+    },
+    {
+      "name": "Alex Andrei B Mago",
+      "number": "09150688579",
+      "id": "7DgLrVU9yfk"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
