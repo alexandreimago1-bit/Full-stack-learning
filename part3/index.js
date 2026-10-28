@@ -1,6 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
+
+const Person = require('./models/person')
+const mongoose = require('mongoose')
+
 
 app.use(express.json())
 morgan.token('body', (req,res) => {
@@ -12,29 +17,6 @@ app.use(cors())
 
 app.use(morgan(':method :url :res[content-length] - :response-time ms :body'))
 app.use(express.static('dist'))
-let persons = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
-
 
 
 app.get('/info',(request,response) => {
@@ -51,7 +33,7 @@ app.get('/info',(request,response) => {
     });
     response.send(
         `<div>
-            <p>Phonebook has info for ${persons.length} people</p>
+            <p>Phonebook has info for ${Person.length} people</p>
             <p><time datetime="${now.toISOString()}">${formattedTime}</time>.</p>
 
         </div>`)
@@ -59,63 +41,60 @@ app.get('/info',(request,response) => {
 })
 
 app.get('/api/persons',(request, response) => {
-    response.json(persons)
-    console.log(persons)
+    Person.find({})
+        .then(persons => {
+            response.json(persons)
+        })
 })
 
 app.get('/api/persons/:id', (request,response) => {
-    const id = request.params.id
-    const person = persons.find(person => person.id === id)
-    console.log(person)
-    if (person){
-        response.json(person)
-    }else {
-        response.status(404).end()
-    }
+    Person
+    .findById(request.params.id)
+    .then(persons => {
+        response.json(persons)
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    persons = persons.filter(person => person.id !== id )
-    console.log(persons)
-    response.status(204).end()
+    Person
+    .findByIdAndDelete(request.params.id)
+    .then(persons => {
+        console.log(persons)
+        response.status(204).end()
+    })
+    
 })
 
-const generateId = () => {
-    const maxId = persons.length > 0 
-        ? Math.max(...persons.map(p => Number(p.id)))
-        : 0
-    return String(maxId + 1)
-}
 
 app.post('/api/persons', (request, response) => {
-    const body = request.body 
-        if (!body.name || !body.number){
-        return response.status(400).json({
-            error : 'content missing'
-        })
+    const body = request.body
+
+    if (!body.name || !body.number){
+        return response.status(400).json({ error: 'Content missing.' })
     }
 
-    const personExists = persons.find(person => person.name.toLowerCase().trim() === body.name.toLowerCase().trim())
-
-        if (personExists){
-                return response.status(400).json({
-                    error: 'Name must be Unique'
-                })
-            }
-
-    const person = {
-        id: generateId(),
-        name : body.name,
+    const person = new Person({
+        name: body.name,
         number: body.number
-    }
+    })
 
-    persons = persons.concat(person)
-    console.log(person)
-    response.json(person)
+    person
+    .save()
+    .then(savedPerson => {
+        response.json(savedPerson)
+    })
+
 })
 
 const PORT = process.env.PORT || 4000
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => {
+        console.log('connected to MongoDB')
+
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`)
+        })
+    })
+    .catch(error => {
+        console.error('error connecting to MongoDB', error.message)
+    })
