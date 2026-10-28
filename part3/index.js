@@ -4,7 +4,8 @@ const morgan = require('morgan')
 const app = express()
 
 const Person = require('./models/person')
-const mongoose = require('mongoose')
+const mongoose = require('./mongo')
+const connection = require('./mongo')
 
 
 app.use(express.json())
@@ -87,7 +88,7 @@ app.post('/api/persons', (request, response) => {
 })
 
 const PORT = process.env.PORT || 4000
-mongoose.connect(process.env.MONGODB_URI)
+connection
     .then(() => {
         console.log('connected to MongoDB')
 
