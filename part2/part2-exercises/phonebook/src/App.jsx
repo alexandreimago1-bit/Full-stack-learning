@@ -39,7 +39,7 @@ const Person = ({person, handleDelete}) =>{
   return(
     <div>
       <p>{person.name} - {person.number}</p>
-      <button onClick = {() => handleDelete(person.id) }>delete</button>
+      <button onClick = {() => handleDelete(person._id) }>delete</button>
     </div>  
   )
 }
@@ -48,7 +48,7 @@ const Persons = ({personsToShow, handleDelete}) => {
   return(
     <div>
         {personsToShow.map(person => 
-        <Person person={person} key={person.id} handleDelete={handleDelete}/>
+        <Person person={person} key={person._id} handleDelete={handleDelete}/>
       )}
     </div>
   )
@@ -88,9 +88,9 @@ const App = () => {
             number: newNumber.trim(),
             }
             personsService
-              .update(nameExists.id,personObject)
+              .update(nameExists._id,personObject)
               .then(newPerson => {
-                  setPersons(prev => prev.map(p => p.id === newPerson.id ? newPerson : p))
+                  setPersons(prev => prev.map(p => p._id === newPerson._id ? newPerson : p))
                   setMessage(`Updated ${newPerson.name}'s number`)
                   setTimeout(() => {setMessage(null)},5000)
                   console.log('promise fulfilled', newPerson)
@@ -121,11 +121,11 @@ const App = () => {
     setNewNumber('')}
   
 
-  const handleDelete = (id) => {
+  const handleDelete = (_id) => {
       personsService
-      .deletePerson(id)
+      .deletePerson(_id)
       .then(() =>{
-      return setPersons(prevPersons => prevPersons.filter(person => person.id !== id)) })
+      return setPersons(prevPersons => prevPersons.filter(person => person._id !== _id)) })
       .catch (error => {
         alert(`Failed to delete person: ${error.message}`)})
       
