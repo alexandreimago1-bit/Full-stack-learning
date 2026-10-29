@@ -3,12 +3,12 @@ const mongoose = require('mongoose')
 const personSchema = new mongoose.Schema({
     name: {
         type: String,
-        minLength: 4,
+        minLength: 3,
         required: true
     },
     number: {
         type: String,
-        minLength: 10,
+        minLength: 8,
         required: true
     }
 })

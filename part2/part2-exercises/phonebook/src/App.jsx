@@ -105,7 +105,7 @@ const App = () => {
             number: newNumber.trim(),
             }
             personsService
-              .create(personObject)
+              .create({ personObject })
               .then(newPerson => {
                   setPersons(persons.concat(newPerson))
                   setMessage(`Added ${newPerson.name}`)
@@ -113,6 +113,13 @@ const App = () => {
                     setMessage(null)
                   }, 5000)
                   console.log('promise fulfilled', newPerson)
+              })
+              .catch(error => {
+                console.log(error.response.data.error)
+                setMessage(error.response.data.error)
+                    setTimeout(() => {
+                      setMessage(null)
+                    }, 5000)
               })
     }
   })
