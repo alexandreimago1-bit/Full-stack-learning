@@ -105,7 +105,7 @@ const App = () => {
             number: newNumber.trim(),
             }
             personsService
-              .create({ personObject })
+              .create( personObject )
               .then(newPerson => {
                   setPersons(persons.concat(newPerson))
                   setMessage(`Added ${newPerson.name}`)
