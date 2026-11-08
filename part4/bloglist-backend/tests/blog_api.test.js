@@ -75,6 +75,21 @@ test('a specific blog can be viewed', async () => {
   assert.deepStrictEqual(resultingBlog.body, blogToView);
 });
 
+test('a blog can be deleted', async () => {
+  const blogsBefore = await helper.blogsInDb();
+  const blogstoDelete = blogsBefore[0];
+
+  await api
+    .delete(`/api/blogs/${blogstoDelete.id}`)
+    .expect(204);
+
+  const blogsAfter = await helper.blogsInDb();
+  const ids = blogsAfter.map(n => n.id);
+
+  assert(!ids.includes(blogstoDelete.id));
+  assert.strictEqual(blogsAfter.length, helper.initialBlogs.length - 1);
+});
+
 after(async () => {
   await mongoose.connection.close();
 });
