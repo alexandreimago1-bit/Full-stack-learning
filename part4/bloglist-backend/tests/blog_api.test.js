@@ -66,76 +66,82 @@ describe('when there are initially some blogs saved', () => {
   });
 
   describe('creating a new blog', () => {
-    test('a valid blog can be added', async () => {
-      const newBlog = {
-        title: 'Async/await is useful',
-        author: 'Andrei',
-        url: 'https://example.com/async',
-        likes: 5,
-      };
 
-      await api 
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(201)
-        .expect('Content-Type', /application\/json/);
+    describe('when successful', () => {
+      test('a valid blog can be added', async () => {
+        const newBlog = {
+          title: 'Async/await is useful',
+          author: 'Andrei',
+          url: 'https://example.com/async',
+          likes: 5,
+        };
 
-      const blogsAtEnd = await helper.blogsInDb();
+        await api 
+          .post('/api/blogs')
+          .send(newBlog)
+          .expect(201)
+          .expect('Content-Type', /application\/json/);
 
-      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1);
+        const blogsAtEnd = await helper.blogsInDb();
 
-      const titles = blogsAtEnd.map(blog => blog.title);
+        assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1);
 
-      assert(titles.includes('Async/await is useful'));
+        const titles = blogsAtEnd.map(blog => blog.title);
 
+        assert(titles.includes('Async/await is useful'));
+
+      });
+
+      test('a blog without likes defaults to 0', async () => {
+        const noLikesBlog = {
+          title: 'No likes blog',
+          author: 'Andrei',
+          url: 'https://example.com/nolikes',
+        };
+
+        const response = await api
+          .post('/api/blogs')
+          .send(noLikesBlog)
+          .expect(201)
+          .expect('Content-Type', /application\/json/);
+
+    
+        assert.strictEqual(response.body.likes, 0);
+      });
     });
 
-    test('a blog without likes defaults to 0', async () => {
-      const noLikesBlog = {
-        title: 'No likes blog',
-        author: 'Andrei',
-        url: 'https://example.com/nolikes',
-      };
+    describe('when unsuccessful', () => {
+      test('a blog without a title is not added', async () => {
+        const newBlog = {
+          author: 'Andrei',
+          url: 'https://example.com/async',
+          likes: 5,
+        };
 
-      const response = await api
-        .post('/api/blogs')
-        .send(noLikesBlog)
-        .expect(201)
-        .expect('Content-Type', /application\/json/);
+        await api 
+          .post('/api/blogs')
+          .send(newBlog)
+          .expect(400);
 
-  
-      assert.strictEqual(response.body.likes, 0);
+        const response = await api.get('/api/blogs');
+        assert.strictEqual(response.body.length, helper.initialBlogs.length);
+      });
+
+      test('a blog without a url is not added', async () => {
+        const newBlog = {
+          title: 'No url blog',
+          author: 'Alex',
+        };
+        await api
+          .post('/api/blogs')
+          .send(newBlog)
+          .expect(400);
+
+        const response = await api.get('/api/blogs');
+        assert.strictEqual(response.body.length, helper.initialBlogs.length);
+      });
     });
-
-    test('a blog without a title is not added', async () => {
-      const newBlog = {
-        author: 'Andrei',
-        url: 'https://example.com/async',
-        likes: 5,
-      };
-
-      await api 
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(400);
-
-      const response = await api.get('/api/blogs');
-      assert.strictEqual(response.body.length, helper.initialBlogs.length);
-    });
-
-    test('a blog without a url is not added', async () => {
-      const newBlog = {
-        title: 'No url blog',
-        author: 'Alex',
-      };
-      await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(400);
-
-      const response = await api.get('/api/blogs');
-      assert.strictEqual(response.body.length, helper.initialBlogs.length);
-    });
+    
   });
 
   describe('deleting a blog', () => {
