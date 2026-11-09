@@ -7,14 +7,12 @@ const assert = require('node:assert');
 const helper = require('./test_helper');
 
 
+
 const api = supertest(app);
 
 beforeEach(async () => {
   await Blog.deleteMany({});
-  for (const blog of helper.initialBlogs) {
-    const blogObject = new Blog(blog);
-    await blogObject.save();
-  }
+  await Blog.insertMany(helper.initialBlogs);
 });
 
 test('all blogs are returned', async () => {
@@ -23,6 +21,7 @@ test('all blogs are returned', async () => {
   assert.strictEqual(response.body.length, helper.initialBlogs.length);
 });
 
+// POST request tests
 test('a valid blog can be added', async () => {
   const newBlog = {
     title: 'Async/await is useful',
@@ -47,7 +46,24 @@ test('a valid blog can be added', async () => {
 
 });
 
-test('a blog without title is not added', async () => {
+test('a blog without likes defaults to 0', async () => {
+  const noLikesBlog = {
+    title: 'No likes blog',
+    author: 'Andrei',
+    url: 'https://example.com/nolikes',
+  };
+
+  const response = await api
+    .post('/api/blogs')
+    .send(noLikesBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+
+ 
+  assert.strictEqual(response.body.likes, 0);
+});
+
+test('a blog without a title is not added', async () => {
   const newBlog = {
     author: 'Andrei',
     url: 'https://example.com/async',
@@ -55,6 +71,20 @@ test('a blog without title is not added', async () => {
   };
 
   await api 
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400);
+
+  const response = await api.get('/api/blogs');
+  assert.strictEqual(response.body.length, helper.initialBlogs.length);
+});
+
+test('a blog without a url is not added', async () => {
+  const newBlog = {
+    title: 'No url blog',
+    author: 'Alex',
+  };
+  await api
     .post('/api/blogs')
     .send(newBlog)
     .expect(400);
@@ -88,6 +118,13 @@ test('a blog can be deleted', async () => {
 
   assert(!ids.includes(blogstoDelete.id));
   assert.strictEqual(blogsAfter.length, helper.initialBlogs.length - 1);
+});
+
+test('blogs are identified by id', async () => {
+  const response = await api.get('/api/blogs');
+
+  assert(response.body[0].id);
+  assert(!response.body[0]._id);
 });
 
 after(async () => {
