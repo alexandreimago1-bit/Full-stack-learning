@@ -183,7 +183,26 @@ describe('when there are initially some blogs saved', () => {
     });
   });
 
-  describe('updating an existing blog', () => {});
+  describe('updating an existing blog', () => {
+    test('successfully updating an existing blog returns 200 OK', async () => {
+      const blogsBefore = await helper.blogsInDb();
+      const blogsToEdit = blogsBefore[0];
+      const updatedBlog = {
+        title: blogsToEdit.title,
+        author: blogsToEdit.author,
+        url: blogsToEdit.url,
+        likes: blogsToEdit.likes + 1,
+      };
+      await api
+        .put(`/api/blogs/${blogsToEdit.id}`)
+        .send(updatedBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+
+      const blogsAfter = await helper.blogsInDb();
+      assert.strictEqual(blogsAfter[0].likes, blogsToEdit.likes + 1);
+    });
+  });
 
 });
 
