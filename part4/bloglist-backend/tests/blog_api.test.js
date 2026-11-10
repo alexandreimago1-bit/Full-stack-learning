@@ -159,6 +159,28 @@ describe('when there are initially some blogs saved', () => {
       assert(!ids.includes(blogstoDelete.id));
       assert.strictEqual(blogsAfter.length, helper.initialBlogs.length - 1);
     });
+
+    test('deleting a non-existing blog returns 204', async () => {
+      const validNonExistingId = await helper.nonExistingId();
+
+      await api
+        .delete(`/api/blogs/${validNonExistingId}`)
+        .expect(204);
+
+      const blogsAfter = await helper.blogsInDb();
+      assert.strictEqual(blogsAfter.length, helper.initialBlogs.length);
+    });
+
+    test('deleting an invalid ID returns 400', async () => {
+      const invalidID = '12345';
+
+      await api
+        .delete(`/api/blogs/${invalidID}`)
+        .expect(400);
+
+      const blogsAfter = await helper.blogsInDb();
+      assert.strictEqual(blogsAfter.length, helper.initialBlogs.length);
+    });
   });
 
   describe('updating an existing blog', () => {});
